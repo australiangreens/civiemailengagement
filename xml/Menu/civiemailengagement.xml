@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/admin/setting/civiemailengagement</path>
+    <page_callback>CRM_Admin_Form_Generic</page_callback>
+    <title>Configure CiviEmailEngagement</title>
+    <access_arguments>administer civiemailengagement</access_arguments>
+  </item>
+</menu>

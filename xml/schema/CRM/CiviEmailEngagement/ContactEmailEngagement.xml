@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/CiviEmailEngagement</base>
+  <class>ContactEmailEngagement</class>
+  <name>civicrm_contact_email_engagement</name>
+  <comment>Email engagement data for CiviCRM contacts</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique ContactEmailEngagement ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>contact_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Contact</comment>
+  </field>
+  <foreignKey>
+    <name>contact_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>date_last_click</name>
+    <type>timestamp</type>
+    <comment>Date of last relevant email clickthrough</comment>
+    <required>false</required>
+  </field>
+
+  <field>
+    <name>date_first_click</name>
+    <type>timestamp</type>
+    <comment>Date of first relevant email clickthrough</comment>
+    <required>false</required>
+  </field>
+
+  <field>
+    <name>date_calculated</name>
+    <type>timestamp</type>
+    <comment>Date of last calculation of email engagement values</comment>
+    <required>false</required>
+  </field>
+
+  <field>
+    <name>volume</name>
+    <type>int unsigned</type>
+    <comment>Number of clickthroughs in reporting period</comment>
+  </field>
+
+  <field>
+    <name>volume_last_30_days</name>
+    <type>int unsigned</type>
+    <comment>Number of clickthroughs in last 30 days</comment>
+  </field>
+</table>
