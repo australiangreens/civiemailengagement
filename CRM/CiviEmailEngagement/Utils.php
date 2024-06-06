@@ -51,18 +51,19 @@ class CRM_CiviEmailEngagement_Utils {
     // frequency - number of mailings clicked in reporting period
     // volume - number of mailings in reporting period
     // volume_30days - number of mailings in last 30 days
+    $result['contact_id'] = $contact_id;
     $result['recency'] = NULL;
     $result['frequency'] = NULL;
     $result['volume'] = NULL;
     $result['volume_last_30'] = NULL;
 
     // Get all trackable URL opens within the time range
-    $opens = \Civi\Api4\MailingEventTrackableURLOpen::get(TRUE)
-    ->addSelect('time_stamp', 'meq.contact_id', 'meq.mailing_id', 'mailing.scheduled_date')
+    $opens = \Civi\Api4\MailingEventTrackableURLOpen::get(FALSE)
+    ->addSelect('time_stamp', 'meq.mailing_id')
     ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
     ->addJoin('Mailing AS mailing', 'INNER', ['meq.mailing_id', '=', 'mailing.id'])
     ->addWhere('meq.contact_id', '=', $contact_id)
-    ->addWHere('mailing.scheduled_date', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
+    ->addWhere('time_stamp', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
     ->addOrderBy('time_stamp', 'ASC')
     ->execute();
 
@@ -71,21 +72,32 @@ class CRM_CiviEmailEngagement_Utils {
     // If there are no relevant opens, delete any existing EE records
     // and return an empty result
     if (empty($opens)) {
-      \Civi\Api4\ContactEmailEngagement::delete(TRUE)
+      \Civi\Api4\ContactEmailEngagement::delete(FALSE)
       ->addWhere('contact_id', '=', $contact_id)
       ->execute();
       return $result;
     }
 
+    // Retrieve all mailings delivered to contact within the time range
+    $mailings = \Civi\Api4\MailingEventDelivered::get(FALSE)
+      ->addSelect('time_stamp', 'meq.mailing_id')
+      ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
+      ->AddWhere('meq.contact_id', '=', $contact_id)
+      ->addWhere('time_stamp', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
+      ->addOrderBy('time_stamp', 'ASC')
+      ->execute();
+
+    $mailings = iterator_to_array($mailings);
+
     // Calculate EE values
     $date_first = $opens[0]['time_stamp'];
     $date_last = $opens[count($opens) - 1]['time_stamp'];
-    $result['recency'] = (new DateTime($date_last))->diff(new DateTime($date_first))->days;
-    $result['frequency'] = count($opens);
-    $result['volume'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+    $result['recency'] = (new DateTime())->diff(new DateTime($date_last))->days;
+    $result['frequency'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+    $result['volume'] = count(array_unique(array_column($mailings, 'meq.mailing_id')));
     // Count mailings in last 30 days
-    $filtered_mailings = array_filter($opens, function($item) use ($last30days) {
-      $scheduled_date = new DateTime($item['mailing.scheduled_date']);
+    $filtered_mailings = array_filter($mailings, function($item) use ($last30days) {
+      $scheduled_date = new DateTime($item['time_stamp']);
       return $scheduled_date >= $last30days;
     });
     $result['volume_last_30'] = count(array_unique(array_column($filtered_mailings, 'meq.mailing_id')));

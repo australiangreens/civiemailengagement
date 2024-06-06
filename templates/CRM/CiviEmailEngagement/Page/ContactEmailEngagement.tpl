@@ -10,11 +10,11 @@
       </thead>
       <tbody>
         <tr>
-          <td>Last clickthrough (recency)</td>
+          <td>Last clickthrough</td>
           <td>{ts 1=$model.recency} %1 days ago{/ts}</td>
         </tr>
         <tr>
-          <td>Number of clickthroughs (frequency)</td>
+          <td>Number of mailings interacted with over reporting period</td>
           <td>{ts 1=$model.frequency 2=$model.ee_period} %1 in last %2 months{/ts}</td>
         </tr>
         <tr>
