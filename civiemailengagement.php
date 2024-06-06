@@ -78,7 +78,7 @@ function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data
     return;
   }
   $contactEE = \Civi\Api4\ContactEmailEngagement::get(FALSE)
-  ->addSelect('*')
+  ->addSelect('recency', 'volume_emails_clicked', 'volume_emails_sent', 'volume_emails_sent_30days', 'date_calculated')
   ->addWhere('contact_id', '=', $contact_id)
   ->execute()
   ->first(); // we can safely assume there is only a single EE record per contact
@@ -91,8 +91,8 @@ function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data
       'volume' => $contactEE['volume_emails_sent'],
       'volume_last_30' => $contactEE['volume_emails_sent_30days'],
       'date_calculated' => $contactEE['date_calculated'],
-      'ee_period' => \Civi::settings()->get('civiemailengagement_ee_period'),
-      'template' => 'CRM/Civirfm/Page/ContactEE.tpl'
+      'ee_period' => \Civi::settings()->get('civiemailengagement_period'),
+      'template' => 'CRM/CiviEmailEngagement/Page/ContactEmailEngagement.tpl'
     ];
     $data['civiemailengagement'] = $civiee;
   }

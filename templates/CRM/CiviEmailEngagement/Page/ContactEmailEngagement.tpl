@@ -1,6 +1,5 @@
 <div class='crm-content-block'>
-  <h3>{ts}Email engagement information{/ts}</h3>
-
+  <h4>{ts}Email engagement information{/ts}</h4>
   {if isset($model.date_calculated)}
     {* We have EE values to display *}
     <table class="report-layout" style="max-width: 500px;">
@@ -16,15 +15,15 @@
         </tr>
         <tr>
           <td>Number of clickthroughs (frequency)</td>
-          <td>{ts 1=$model.frequency 2=$model.ee_period} %1 in last %2 days{/ts}</td>
+          <td>{ts 1=$model.frequency 2=$model.ee_period} %1 in last %2 months{/ts}</td>
         </tr>
         <tr>
           <td>Number of mailings sent over reporting period</td>
-          <td>{ts 1=$model.volume 2=$model.ee_period} %1 in last %2 days{/ts}</td>
+          <td>{ts 1=$model.volume 2=$model.ee_period} %1 in last %2 months{/ts}</td>
         </tr>
         <tr>
           <td>Number of mailings sent in the last 30 days</td>
-          <td>{ts 1=$model.volume_last_30} %1</td>
+          <td>{ts 1=$model.volume_last_30} %1{/ts}</td>
         </tr>
       </tbody>
     </table>
