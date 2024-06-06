@@ -1,0 +1,13 @@
+{
+  "name": "australian_greens/civiemailengagement",
+  "description": "CiviCRM extension to implement an email engagement data model",
+  "homepage": "https://github.com/australiangreens/civiemailengagement",
+  "license": "AGPL-3.0-or-later",
+  "require": {
+    "composer/installers": "^1.6 || ^2"
+  },
+  "support": "https://github.com/australiangreens/civiemailengagement/issues",
+  "type": "civicrm-ext",
+  "version": "0.5.0"
+  }
+
