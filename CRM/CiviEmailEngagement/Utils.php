@@ -17,7 +17,7 @@ class CRM_CiviEmailEngagement_Utils {
    * @param array $params
    * @return bool
    */
-  public static function calculateEECallback(CRM_Queue_TaskContext $ctx, $params) {
+  public static function processEETask(CRM_Queue_TaskContext $ctx, $params) {
     try {
       $contact_id = $params['contact_id'];
       $result = self::calculateEE($contact_id);
@@ -37,26 +37,103 @@ class CRM_CiviEmailEngagement_Utils {
  */
   public static function calculateEE($contact_id): array {
     // Get extension settings
-    $ee_period = Civi::settings()->get('civiemailengagement_ee_period');
+    $ee_period = Civi::settings()->get('civiemailengagement_period');
 
     // Construct the earliest date that defines our EE period/window
     $ee_earliest_date = new DateTime();
     $ee_earliest_date->sub(new DateInterval("P{$ee_period}D"));
+    // Construct last 30 day window for recent volume calculation
+    $now = new DateTime();
+    $last30days = $now->sub(new DateInterval("P30D"));
+
+    // Set up results object
+    // recency - date of last click
+    // frequency - number of mailings clicked in reporting period
+    // volume - number of mailings in reporting period
+    // volume_30days - number of mailings in last 30 days
+    $result['recency'] = NULL;
+    $result['frequency'] = NULL;
+    $result['volume'] = NULL;
+    $result['volume_last_30'] = NULL;
 
     // Get all trackable URL opens within the time range
     $opens = \Civi\Api4\MailingEventTrackableURLOpen::get(TRUE)
-    ->addSelect('meq.contact_id', 'meq.mailing_id')
+    ->addSelect('time_stamp', 'meq.contact_id', 'meq.mailing_id', 'mailing.scheduled_date')
     ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
+    ->addJoin('Mailing AS mailing', 'INNER', ['meq.mailing_id', '=', 'mailing.id'])
+    ->addWhere('meq.contact_id', '=', $contact_id)
+    ->addWHere('mailing.scheduled_date', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
+    ->addOrderBy('time_stamp', 'ASC')
     ->execute();
 
     $opens = iterator_to_array($opens);
 
     // If there are no relevant opens, delete any existing EE records
+    // and return an empty result
     if (empty($opens)) {
       \Civi\Api4\ContactEmailEngagement::delete(TRUE)
       ->addWhere('contact_id', '=', $contact_id)
       ->execute();
-      return [];
+      return $result;
     }
+
+    // Calculate EE values
+    $date_first = $opens[0]['time_stamp'];
+    $date_last = $opens[count($opens) - 1]['time_stamp'];
+    $result['recency'] = (new DateTime($date_last))->diff(new DateTime($date_first))->days;
+    $result['frequency'] = count($opens);
+    $result['volume'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+    // Count mailings in last 30 days
+    $filtered_mailings = array_filter($opens, function($item) use ($last30days) {
+      $scheduled_date = new DateTime($item['mailing.scheduled_date']);
+      return $scheduled_date >= $last30days;
+    });
+    $result['volume_last_30'] = count(array_unique(array_column($filtered_mailings, 'meq.mailing_id')));
+
+    // Upsert ContactEmailEngagement record
+    $payload['contact_id'] = $contact_id;
+    $payload['date_first_click'] = $date_first;
+    $payload['date_last_click'] = $date_last;
+    $payload['date_calculated'] = (new DateTimeImmutable())->format('Y-m-d H:i:sP');
+    $payload['volume_emails_clicked'] = $result['frequency'];
+    $payload['volume_emails_sent'] = $result['volume'];
+    $payload['volume_emails_sent_30days'] = $result['volume_last_30'];
+    $res = \Civi\Api4\ContactEmailEngagement::save(FALSE)
+      ->setRecords([$payload])
+      ->setMatch(['contact_id'])
+      ->execute();
+
+    // Return $result
+    return $result;
+  }
+
+  /**
+   * Finds expired ContactEmailEngagement records and queues them for recalculation.
+   * Expired records are those where the date of the first trackable URL click
+   * is earlier than "now - ee_period'
+   */
+  public static function refreshExpired(): int {
+    $ee_period = Civi::settings()->get('civiemailengagement_period');
+    $ee_earliest_date = new DateTime();
+    $ee_earliest_date->sub(new DateInterval("P{$ee_period}D"));
+
+    $expired_records = \Civi\Api4\ContactEmailEngagement::get(FALSE)
+      ->addSelect('contact_id')
+      ->addWhere('date_first_click', '<', $ee_earliest_date->format('Y-m-d H:i:sP'))
+      ->setLimit(0)
+      ->execute();
+
+    if ($expired_records->rowCount) {
+      $queue = CRM_CiviEmailEngagement_Queue::singleton()->getQueue();
+      foreach ($expired_records as $record) {
+        $params = ['contact_id' => $record['contact_id']];
+        $task = new CRM_Queue_Task(
+          ['CRM_CiviEmailEngagement_Utils', 'processEETask'],
+          [$params]
+        );
+        $queue->createItem($task);
+      }
+    }
+    return $expired_records->rowCount;
   }
 }

@@ -11,6 +11,7 @@ use CRM_CiviEmailEngagement_ExtensionUtil as E;
  */
 function civiemailengagement_civicrm_config(&$config): void {
   _civiemailengagement_civix_civicrm_config($config);
+  Civi::service('dispatcher')->addListener('hook_civicrm_navigationMenu', 'civiemailengagement_symfony_navigationMenu', 100);
 }
 
 /**
@@ -36,7 +37,9 @@ function civiemailengagement_civicrm_enable(): void {
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
  */
-function civiemailengagement_civicrm_navigationMenu(&$menu): void {
+function civiemailengagement_symfony_navigationMenu($event): void {
+  $hook_values = $event->getHookValues();
+  $menu = &$hook_values[0];
   _civiemailengagement_civix_insert_navigation_menu($menu, 'Administer/CiviModels', [
     'label' => E::ts('Email Engagement Model Settings'),
     'name' => 'civiemailengagement_settings',
@@ -75,22 +78,23 @@ function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data
     return;
   }
   $contactEE = \Civi\Api4\ContactEmailEngagement::get(FALSE)
-  ->addSelect('id', 'contact_id', 'recency', 'frequency', 'monetary', 'date_calculated')
+  ->addSelect('*')
   ->addWhere('contact_id', '=', $contact_id)
   ->execute()
-  ->first(); // we can safely assume there is only a single ContactRfm record per contact
+  ->first(); // we can safely assume there is only a single EE record per contact
 
-  if (isset($contactRfm['date_calculated'])) {
-    $civirfm = [
+  if (isset($contactEE['date_calculated'])) {
+    $civiee = [
       'contact_id' => $contact_id,
-      'recency' => $contactRfm['recency'],
-      'frequency' => $contactRfm['frequency'],
-      'monetary' => $contactRfm['monetary'],
-      'date_calculated' => $contactRfm['date_calculated'],
-      'rfm_time' => \Civi::settings()->get('civirfm_rfm_period'),
+      'recency' => $contactEE['recency'],
+      'frequency' => $contactEE['volume_emails_clicked'],
+      'volume' => $contactEE['volume_emails_sent'],
+      'volume_last_30' => $contactEE['volume_emails_sent_30days'],
+      'date_calculated' => $contactEE['date_calculated'],
+      'ee_period' => \Civi::settings()->get('civiemailengagement_ee_period'),
       'template' => 'CRM/Civirfm/Page/ContactEE.tpl'
     ];
-    $data['civirfm'] = $civirfm;
+    $data['civiemailengagement'] = $civiee;
   }
 }
 

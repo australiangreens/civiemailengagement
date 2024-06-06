@@ -40,8 +40,9 @@ CREATE TABLE `civicrm_contact_email_engagement` (
   `date_last_click` timestamp NULL COMMENT 'Date of last relevant email clickthrough',
   `date_first_click` timestamp NULL COMMENT 'Date of first relevant email clickthrough',
   `date_calculated` timestamp NULL COMMENT 'Date of last calculation of email engagement values',
-  `volume` int unsigned COMMENT 'Number of clickthroughs in reporting period',
-  `volume_last_30_days` int unsigned COMMENT 'Number of clickthroughs in last 30 days',
+  `volume_emails_clicked` int unsigned NULL COMMENT 'Number of mailings engaged with within reporting period',
+  `volume_emails_sent` int unsigned NULL COMMENT 'Number of mailings sent within reporting period',
+  `volume_emails_sent_30days` int unsigned NULL COMMENT 'Number of mailings sent within last 30 days',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_contact_email_engagement_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB;

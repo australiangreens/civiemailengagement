@@ -55,14 +55,23 @@
   </field>
 
   <field>
-    <name>volume</name>
+    <name>volume_emails_clicked</name>
     <type>int unsigned</type>
-    <comment>Number of clickthroughs in reporting period</comment>
+    <comment>Number of mailings engaged with within reporting period</comment>
+    <required>false</required>
   </field>
 
   <field>
-    <name>volume_last_30_days</name>
+    <name>volume_emails_sent</name>
     <type>int unsigned</type>
-    <comment>Number of clickthroughs in last 30 days</comment>
+    <comment>Number of mailings sent within reporting period</comment>
+    <required>false</required>
+  </field>
+
+  <field>
+    <name>volume_emails_sent_30days</name>
+    <type>int unsigned</type>
+    <comment>Number of mailings sent within last 30 days</comment>
+    <required>false</required>
   </field>
 </table>
