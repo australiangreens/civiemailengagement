@@ -1,5 +1,5 @@
 <div class='crm-content-block'>
-  <h4>{ts}Email engagement information{/ts}</h4>
+  <h4>{ts}Email Engagement{/ts}</h4>
   {if isset($model.date_calculated)}
     {* We have EE values to display *}
     <table class="report-layout" style="max-width: 500px;">
@@ -22,6 +22,7 @@
         <tr>
           <td>No mailings interacted with over reporting period</td>
         </tr>
+        {/if}
         <tr>
           <td>Number of mailings sent over reporting period</td>
           <td>{ts 1=$model.volume 2=$model.ee_period} %1 in last %2 months{/ts}</td>
