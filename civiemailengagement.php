@@ -74,7 +74,7 @@ function civiemailengagement_civicrm_permission(&$permissions) {
  * @link https://github.com/australiangreens/
  */
 function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data) {
-  if (!CRM_Core_Permission::check('access civirfm')) {
+  if (!CRM_Core_Permission::check('access civiemailengagement')) {
     return;
   }
   $contactEE = \Civi\Api4\ContactEmailEngagement::get(FALSE)
