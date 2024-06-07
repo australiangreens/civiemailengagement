@@ -19,12 +19,13 @@ class CRM_CiviEmailEngagement_Utils {
    */
   public static function processEETask(CRM_Queue_TaskContext $ctx, $params) {
     try {
+      \Drupal::logger('civiemailengagement')->info('Processing Email Engagement values for contact {contact_id}', ['contact_id' => $params['contact_id']]);
       $contact_id = $params['contact_id'];
       $result = self::calculateEE($contact_id);
       return TRUE;
     } catch (Exception $e) {
       Civi::log()->error('Error calculating Email Engagement values for contact {contact_id}', ['contact_id' => $contact_id]);
-        return FALSE;
+      return FALSE;
     }
   }
 
@@ -69,15 +70,6 @@ class CRM_CiviEmailEngagement_Utils {
 
     $opens = iterator_to_array($opens);
 
-    // If there are no relevant opens, delete any existing EE records
-    // and return an empty result
-    if (empty($opens)) {
-      \Civi\Api4\ContactEmailEngagement::delete(FALSE)
-      ->addWhere('contact_id', '=', $contact_id)
-      ->execute();
-      return $result;
-    }
-
     // Retrieve all mailings delivered to contact within the time range
     $mailings = \Civi\Api4\MailingEventDelivered::get(FALSE)
       ->addSelect('time_stamp', 'meq.mailing_id')
@@ -89,11 +81,22 @@ class CRM_CiviEmailEngagement_Utils {
 
     $mailings = iterator_to_array($mailings);
 
+    // If there have been no mailings within the reporting period
+    // delete any existing EE records and return an empty result
+    if (empty($mailings)) {
+      \Civi\Api4\ContactEmailEngagement::delete(FALSE)
+      ->addWhere('contact_id', '=', $contact_id)
+      ->execute();
+      return $result;
+    }
+
     // Calculate EE values
-    $date_first = $opens[0]['time_stamp'];
-    $date_last = $opens[count($opens) - 1]['time_stamp'];
-    $result['recency'] = (new DateTime())->diff(new DateTime($date_last))->days;
-    $result['frequency'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+    if (count($opens)) {
+      $date_first = $opens[0]['time_stamp'];
+      $date_last = $opens[count($opens) - 1]['time_stamp'];
+      $result['recency'] = (new DateTime())->diff(new DateTime($date_last))->days;
+      $result['frequency'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+    }
     $result['volume'] = count(array_unique(array_column($mailings, 'meq.mailing_id')));
     // Count mailings in last 30 days
     $filtered_mailings = array_filter($mailings, function($item) use ($last30days) {

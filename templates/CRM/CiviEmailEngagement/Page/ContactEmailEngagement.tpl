@@ -9,6 +9,7 @@
         </tr>
       </thead>
       <tbody>
+        {if $model.recency}
         <tr>
           <td>Last clickthrough</td>
           <td>{ts 1=$model.recency} %1 days ago{/ts}</td>
@@ -16,6 +17,10 @@
         <tr>
           <td>Number of mailings interacted with over reporting period</td>
           <td>{ts 1=$model.frequency 2=$model.ee_period} %1 in last %2 months{/ts}</td>
+        </tr>
+        {else}
+        <tr>
+          <td>No mailings interacted with over reporting period</td>
         </tr>
         <tr>
           <td>Number of mailings sent over reporting period</td>

@@ -9,8 +9,8 @@ return [
     'entity' => 'Job',
     'params' => [
       'version' => 3,
-      'name' => 'Call ContactEmailEngagement.Runqueue API',
-      'description' => 'Call ContactEmailEngagement.Runqueue API',
+      'name' => 'CiviEmailEngagement calculation processing',
+      'description' => 'Processes queued CiviEmailEngagement calculation jobs',
       'run_frequency' => 'Hourly',
       'api_entity' => 'ContactEmailEngagement',
       'api_action' => 'Runqueue',

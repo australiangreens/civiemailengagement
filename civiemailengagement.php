@@ -118,8 +118,15 @@ function civiemailengagement_create_queue_task($params) {
  */
 function civiemailengagement_civicrm_postCommit($op, $objectName, $objectId, $objectRef) {
   if ($op == 'create' && $objectName == 'MailingEventTrackableURLOpen') {
+    $result = \Civi\Api4\MailingEventTrackableURLOpen::get(FALSE)
+      ->addSelect('meq.contact_id')
+      ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
+      ->addWhere('id', '=', $objectId)
+      ->execute()
+      ->first();
+    $contact_id = $result['meq.contact_id'];
     $params = [
-      'contact_id' => $objectId,
+      'contact_id' => $contact_id,
     ];
     civiemailengagement_create_queue_task($params);
   }

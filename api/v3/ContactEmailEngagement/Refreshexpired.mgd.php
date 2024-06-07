@@ -9,8 +9,8 @@ return [
     'entity' => 'Job',
     'params' => [
       'version' => 3,
-      'name' => 'Call ContactEmailEngagement.Refreshexpired API',
-      'description' => 'Call ContactEmailEngagement.Refreshexpired API',
+      'name' => 'CiviEmailEngagement find expired records',
+      'description' => 'Checks for expired CiviEmailEngagement records and queues them for reprocessing',
       'run_frequency' => 'Daily',
       'api_entity' => 'ContactEmailEngagement',
       'api_action' => 'Refreshexpired',
