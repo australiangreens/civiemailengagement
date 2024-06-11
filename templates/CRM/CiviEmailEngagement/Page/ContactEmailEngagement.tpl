@@ -5,11 +5,11 @@
     <table class="report-layout" style="max-width: 500px;">
       <thead>
         <tr>
-          <th colspan="2">The following email engagement data was calculated on {ts 1=$model.date_calculated} %1{/ts}</th>
+          <th colspan="2">The following data was calculated on {ts 1=$model.date_calculated} %1{/ts}</th>
         </tr>
       </thead>
       <tbody>
-        {if $model.recency}
+        {if $model.frequency}
         <tr>
           <td>Last clickthrough</td>
           <td>{ts 1=$model.recency} %1 days ago{/ts}</td>
