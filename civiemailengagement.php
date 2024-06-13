@@ -95,6 +95,8 @@ function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data
       'template' => 'CRM/CiviEmailEngagement/Page/ContactEmailEngagement.tpl'
     ];
     $data['civiemailengagement'] = $civiee;
+  } else {
+    $data['civiemailengagement'] = ['date_calculated' => NULL];
   }
 }
 
