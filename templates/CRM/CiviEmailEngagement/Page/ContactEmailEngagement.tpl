@@ -1,3 +1,4 @@
+{crmScope extensionKey="civiemailengagement'}
 <div class='crm-content-block'>
   <h4>{ts}Email Engagement{/ts}</h4>
   {if isset($model.date_calculated)}
@@ -38,3 +39,4 @@
     <p>No email engagement data exists for this contact</p>
   {/if}
 </div>
+{/crmScope}
