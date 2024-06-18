@@ -1,8 +1,7 @@
-{crmScope extensionKey="civiemailengagement'}
-<div class='crm-content-block'>
+{crmScope extensionKey="civiemailengagement"}
+<div class="crm-content-block">
   <h4>{ts}Email Engagement{/ts}</h4>
   {if isset($model.date_calculated)}
-    {* We have EE values to display *}
     <table class="report-layout" style="max-width: 500px;">
       <thead>
         <tr>
@@ -35,7 +34,6 @@
       </tbody>
     </table>
   {else}
-    {* No EE values have been calculated *}
     <p>No email engagement data exists for this contact</p>
   {/if}
 </div>

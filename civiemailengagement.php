@@ -96,7 +96,7 @@ function civiemailengagement_civimodels_displayCiviModelData($contact_id, &$data
     ];
     $data['civiemailengagement'] = $civiee;
   } else {
-    $data['civiemailengagement'] = ['date_calculated' => NULL];
+    return;
   }
 }
 

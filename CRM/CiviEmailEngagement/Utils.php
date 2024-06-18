@@ -42,7 +42,7 @@ class CRM_CiviEmailEngagement_Utils {
 
     // Construct the earliest date that defines our EE period/window
     $ee_earliest_date = new DateTime();
-    $ee_earliest_date->sub(new DateInterval("P{$ee_period}D"));
+    $ee_earliest_date->sub(new DateInterval("P{$ee_period}M"));
     // Construct last 30 day window for recent volume calculation
     $now = new DateTime();
     $last30days = $now->sub(new DateInterval("P30D"));
@@ -92,11 +92,14 @@ class CRM_CiviEmailEngagement_Utils {
 
     // Calculate EE values
     if (count($opens)) {
+      // Calculate recency and frequency if there's a trackable URL open
+      // within the reporting period
       $date_first = $opens[0]['time_stamp'];
       $date_last = $opens[count($opens) - 1]['time_stamp'];
       $result['recency'] = (new DateTime())->diff(new DateTime($date_last))->days;
       $result['frequency'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
     }
+    // Count mailings in reporting period
     $result['volume'] = count(array_unique(array_column($mailings, 'meq.mailing_id')));
     // Count mailings in last 30 days
     $filtered_mailings = array_filter($mailings, function($item) use ($last30days) {
