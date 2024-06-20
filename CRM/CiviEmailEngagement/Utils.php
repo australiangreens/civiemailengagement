@@ -62,7 +62,6 @@ class CRM_CiviEmailEngagement_Utils {
     $opens = \Civi\Api4\MailingEventTrackableURLOpen::get(FALSE)
     ->addSelect('time_stamp', 'meq.mailing_id')
     ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
-    ->addJoin('Mailing AS mailing', 'INNER', ['meq.mailing_id', '=', 'mailing.id'])
     ->addWhere('meq.contact_id', '=', $contact_id)
     ->addWhere('time_stamp', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
     ->addOrderBy('time_stamp', 'ASC')
