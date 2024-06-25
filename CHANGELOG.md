@@ -1,6 +1,11 @@
 # Changelog
 All notable changes for the CiviEmailEngagement extension will be noted here.
 
+## [1.0.3] - 2024-06-25
+
+### Changed
+- Fixed bug in refreshExpired function
+
 ## [1.0.2] - 2024-06-20
 
 ### Changed

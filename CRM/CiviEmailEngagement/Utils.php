@@ -132,7 +132,7 @@ class CRM_CiviEmailEngagement_Utils {
   public static function refreshExpired(): int {
     $ee_period = Civi::settings()->get('civiemailengagement_period');
     $ee_earliest_date = new DateTime();
-    $ee_earliest_date->sub(new DateInterval("P{$ee_period}D"));
+    $ee_earliest_date->sub(new DateInterval("P{$ee_period}M"));
 
     $expired_records = \Civi\Api4\ContactEmailEngagement::get(FALSE)
       ->addSelect('contact_id')
