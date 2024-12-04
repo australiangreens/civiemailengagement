@@ -58,16 +58,15 @@ class CRM_CiviEmailEngagement_Utils {
     $result['volume'] = NULL;
     $result['volume_last_30'] = NULL;
 
-    // Get all trackable URL opens within the time range
-    $opens = \Civi\Api4\MailingEventTrackableURLOpen::get(FALSE)
+    // Get all trackable URL clicks within the time range
+    $clicks = \Civi\Api4\MailingEventTrackableURLOpen::get(FALSE)
     ->addSelect('time_stamp', 'meq.mailing_id')
     ->addJoin('MailingEventQueue AS meq', 'INNER', ['event_queue_id', '=', 'meq.id'])
     ->addWhere('meq.contact_id', '=', $contact_id)
     ->addWhere('time_stamp', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
     ->addOrderBy('time_stamp', 'ASC')
-    ->execute();
-
-    $opens = iterator_to_array($opens);
+    ->execute()
+    ->getArrayCopy();
 
     // Retrieve all mailings delivered to contact within the time range
     $mailings = \Civi\Api4\MailingEventDelivered::get(FALSE)
@@ -76,13 +75,12 @@ class CRM_CiviEmailEngagement_Utils {
       ->AddWhere('meq.contact_id', '=', $contact_id)
       ->addWhere('time_stamp', '>=', $ee_earliest_date->format('Y-m-d H:i:sP'))
       ->addOrderBy('time_stamp', 'ASC')
-      ->execute();
-
-    $mailings = iterator_to_array($mailings);
+      ->execute()
+      ->getArrayCopy();
 
     // If there have been no mailings within the reporting period
     // delete any existing EE records and return an empty result
-    if (empty($mailings)) {
+    if (empty($clicks)) {
       \Civi\Api4\ContactEmailEngagement::delete(FALSE)
       ->addWhere('contact_id', '=', $contact_id)
       ->execute();
@@ -90,13 +88,13 @@ class CRM_CiviEmailEngagement_Utils {
     }
 
     // Calculate EE values
-    if (count($opens)) {
+    if (count($clicks)) {
       // Calculate recency and frequency if there's a trackable URL open
       // within the reporting period
-      $date_first = $opens[0]['time_stamp'];
-      $date_last = $opens[count($opens) - 1]['time_stamp'];
+      $date_first = $clicks[0]['time_stamp'];
+      $date_last = $clicks[count($clicks) - 1]['time_stamp'];
       $result['recency'] = (new DateTime())->diff(new DateTime($date_last))->days;
-      $result['frequency'] = count(array_unique(array_column($opens, 'meq.mailing_id')));
+      $result['frequency'] = count(array_unique(array_column($clicks, 'meq.mailing_id')));
     }
     // Count mailings in reporting period
     $result['volume'] = count(array_unique(array_column($mailings, 'meq.mailing_id')));
